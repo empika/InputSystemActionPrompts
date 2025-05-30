@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.InputSystem.Utilities;
 
 namespace InputSystemActionPrompts
@@ -66,7 +67,8 @@ namespace InputSystemActionPrompts
         /// <summary>
         /// Event listener for button presses on input system
         /// </summary>
-        private static IDisposable s_EventListener;
+        private static IDisposable s_OnAnyButtonPressEventListener;
+        private static IDisposable s_OnEventEventListener;
 
         private static InputDevicePromptData s_PlatformDeviceOverride;
 
@@ -114,7 +116,8 @@ namespace InputSystemActionPrompts
             
             // We'll want to listen to buttons being pressed on any device
             // in order to dynamically switch device prompts (From description in InputSystem.cs)
-            s_EventListener = InputSystem.onAnyButtonPress.Call(OnButtonPressed);
+            s_OnAnyButtonPressEventListener = InputSystem.onAnyButtonPress.Call(OnButtonPressed);
+            // s_OnEventEventListener = InputSystem.onEvent.Call(OnEvent);
             
             // Listen to device change. If the active device is disconnected, switch to default
             InputSystem.onDeviceChange += OnDeviceChange;
@@ -126,7 +129,7 @@ namespace InputSystemActionPrompts
 
             s_Initialised = true;
         }
-
+        
         /// <summary>
         /// Called on device change
         /// </summary>
@@ -134,6 +137,7 @@ namespace InputSystemActionPrompts
         /// <param name="change"></param>
         private static void OnDeviceChange(InputDevice device, InputDeviceChange change)
         {
+            Debug.Log($"Device changed: {device.name}");
             // If the active device has been disconnected, revert to default device
             if (device != s_ActiveDevice) return;
             
@@ -184,6 +188,13 @@ namespace InputSystemActionPrompts
             if (!s_Initialised) Initialise();
             var (_, matchingPrompt) = GetActionPathBindingPromptEntries(inputTag);
             return matchingPrompt != null && matchingPrompt.Count>0 ? matchingPrompt[0].PromptSprite : null;
+        }
+        
+        public static List<Sprite> GetActionPathBindingSprites(string inputTag)
+        {
+            if (!s_Initialised) Initialise();
+            var (_, matchingPrompt) = GetActionPathBindingPromptEntries(inputTag);
+            return matchingPrompt != null && matchingPrompt.Count>0 ? matchingPrompt.Select(s => s.PromptSprite).ToList() : null;
         }
 
         /// <summary>
@@ -438,16 +449,27 @@ namespace InputSystemActionPrompts
                 {
                     foreach (var binding in actionMap.bindings)
                     {
-                        var bindingPath = $"{actionMap.name}/{binding.action}";
+                        string compositePath = "";
+                        if (binding.isPartOfComposite)
+                        {
+                            compositePath = $"/{binding.name}";
+                        }
+                        var bindingPath = $"{actionMap.name}/{binding.action}{compositePath}";
                         var bindingPathLower = bindingPath.ToLower();
                         
-                        //Debug.Log($"Binding {bindingPathLower} to path {binding.path}");
+                        Debug.Log($"Binding {bindingPathLower} to path {binding.path}, isComposite {binding.isComposite}, isPartOfComposite {binding.isPartOfComposite}, effectivePath: {binding.effectivePath}");
                         var entry = new ActionBindingMapEntry
                         {
                             BindingPath = binding.effectivePath,
                             IsComposite = binding.isComposite,
                             IsPartOfComposite = binding.isPartOfComposite
                         };
+
+                        // if (binding.isPartOfComposite)
+                        // {
+                        //     Debug.Log($"Binding composite part: {binding.}");
+                        // }
+                        
                         if (s_ActionBindingMap.TryGetValue(bindingPathLower, out var value))
                         {
                             value.Add(entry);
@@ -478,6 +500,11 @@ namespace InputSystemActionPrompts
                 }
             }
         }
+
+        public static void SetActiveDevice(InputDevice inputDevice)
+        {
+            s_ActiveDevice = inputDevice;
+        }
         
         /// <summary>
         /// Called when a button is pressed on any device
@@ -489,6 +516,5 @@ namespace InputSystemActionPrompts
             s_ActiveDevice = button.device;
             OnActiveDeviceChanged.Invoke(s_ActiveDevice);
         }
-        
     }
 }
