@@ -447,6 +447,7 @@ namespace InputSystemActionPrompts
                 foreach (var device in InputSystem.devices.Where(device => DeviceMatchesType(device, deviceType)))
                 {
                     s_ActiveDevice = device;
+                    Debug.Log($"Default active device is {device.name}");
                     return;
                 }
             }
