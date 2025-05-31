@@ -23,6 +23,10 @@ namespace InputSystemActionPrompts
       /// synced up and have the same name 
       /// </summary>
       public Sprite PromptSprite;
+      /// <summary>
+      /// The font glyph.
+      /// </summary>
+      public string PromptGlyph;
    }
 
 

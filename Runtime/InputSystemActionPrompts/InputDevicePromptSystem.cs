@@ -178,6 +178,34 @@ namespace InputSystemActionPrompts
         }
         
         /// <summary>
+        /// Replace tags in a given string with TMPPro strings to insert device prompt sprites
+        /// </summary>
+        /// <param name="inputText"></param>
+        /// <returns></returns>
+        public static string InsertPromptGlyphs(string inputText)
+        {
+            if (!s_Initialised) Initialise();
+            if (!s_Initialised) return "InputSystemDevicePrompt Settings missing - please create using menu item 'Window/Input System Device Prompts/Create Settings'";
+
+            var foundTags = GetTagList(inputText);
+            var replacedText = inputText;
+            foreach (var tag in foundTags)
+            {
+                var (_, matchingPrompt) = GetActionPathBindingPromptEntries(tag);
+
+                var prompt = matchingPrompt.FirstOrDefault();
+
+                if (prompt != null && !string.IsNullOrEmpty(prompt.PromptGlyph.Trim()))
+                {
+                    // Simple text replace
+                    replacedText = replacedText.Replace($"{s_Settings.OpenTag}{tag}{s_Settings.CloseTag}", prompt.PromptGlyph);
+                }
+            }
+
+            return replacedText;
+        }
+        
+        /// <summary>
         /// Gets the first matching sprite (eg DualShock Cross Button Sprite) for the given input tag (eg "Player/Jump")
         /// Currently only supports one sprite, not composite (eg WASD)
         /// </summary>
