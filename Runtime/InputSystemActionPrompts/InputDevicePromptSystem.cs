@@ -193,12 +193,15 @@ namespace InputSystemActionPrompts
             {
                 var (_, matchingPrompt) = GetActionPathBindingPromptEntries(tag);
 
-                var prompt = matchingPrompt.FirstOrDefault();
-
-                if (prompt != null && !string.IsNullOrEmpty(prompt.PromptGlyph.Trim()))
+                if (matchingPrompt != null)
                 {
-                    // Simple text replace
-                    replacedText = replacedText.Replace($"{s_Settings.OpenTag}{tag}{s_Settings.CloseTag}", prompt.PromptGlyph);
+                    var prompt = matchingPrompt.FirstOrDefault();
+
+                    if (prompt != null && !string.IsNullOrEmpty(prompt.PromptGlyph.Trim()))
+                    {
+                        // Simple text replace
+                        replacedText = replacedText.Replace($"{s_Settings.OpenTag}{tag}{s_Settings.CloseTag}", prompt.PromptGlyph);
+                    }
                 }
             }
 
