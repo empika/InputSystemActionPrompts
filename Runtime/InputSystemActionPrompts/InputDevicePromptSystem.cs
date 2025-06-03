@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
@@ -154,7 +155,7 @@ namespace InputSystemActionPrompts
         /// </summary>
         /// <param name="inputText"></param>
         /// <returns></returns>
-        public static string InsertPromptSprites(string inputText)
+        public static string InsertPromptSprites(string inputText, bool matchOnlyFirstSprite = false)
         {
             if (!s_Initialised) Initialise();
             if (!s_Initialised) return "InputSystemDevicePrompt Settings missing - please create using menu item 'Window/Input System Device Prompts/Create Settings'";
@@ -163,7 +164,7 @@ namespace InputSystemActionPrompts
             var replacedText = inputText;
             foreach (var tag in foundTags)
             {
-                var replacementTagText = GetActionPathBindingTextSpriteTags(tag);
+                var replacementTagText = GetActionPathBindingTextSpriteTags(tag, matchOnlyFirstSprite);
                 
                 //if PromptSpriteFormatter is empty for some reason return the text as if formatter was {SPRITE} (normally)
                 var promptSpriteFormatter = s_Settings.PromptSpriteFormatter == "" ? InputSystemDevicePromptSettings.PromptSpriteFormatterSpritePlaceholder : s_Settings.PromptSpriteFormatter;
@@ -280,8 +281,9 @@ namespace InputSystemActionPrompts
         /// Supports composite tags, eg WASD by returning all matches for active device (observing order)
         /// </summary>
         /// <param name="inputTag"></param>
+        /// <param name="matchOnlyFirst">Only output the first sprite found</param>
         /// <returns></returns>
-        private static string GetActionPathBindingTextSpriteTags(string inputTag)
+        private static string GetActionPathBindingTextSpriteTags(string inputTag, bool matchOnlyFirst = false)
         {
             if (s_PlatformDeviceOverride == null) // not platform override
             {
@@ -298,21 +300,31 @@ namespace InputSystemActionPrompts
 
             if (!s_ActionBindingMap.ContainsKey(lowerCaseTag))
             {
-                return $"MISSING_ACTION {lowerCaseTag}";
+                Debug.LogError($"MISSING_ACTION {lowerCaseTag}");
+                return ""; //$"MISSING_ACTION {lowerCaseTag}";
             }
 
             var (validDevice, matchingPrompt) = GetActionPathBindingPromptEntries(inputTag);
            
             if (matchingPrompt==null || matchingPrompt.Count==0)
             {
-                return $"MISSING_PROMPT '{inputTag}'";
+                Debug.LogError($"MISSING_PROMPT '{inputTag}'");
+                return ""; //$"MISSING_PROMPT '{inputTag}'";
             }
             // Return each
             var outputText = string.Empty;
-            foreach (var prompt in matchingPrompt)
+            for (var index = 0; index < matchingPrompt.Count; index++)
             {
-                outputText += $"<sprite=\"{validDevice.SpriteAsset.name}\" name=\"{prompt.PromptSprite.name}\" {s_Settings.RichTextTags}>";
+                var prompt = matchingPrompt[index];
+                outputText +=
+                    $"<sprite=\"{validDevice.SpriteAsset.name}\" name=\"{prompt.PromptSprite.name}\" {s_Settings.RichTextTags}>";
+
+                if (matchOnlyFirst)
+                {
+                    break;
+                }
             }
+
             return outputText;
         }
 
@@ -419,18 +431,39 @@ namespace InputSystemActionPrompts
         private static List<string> GetTagList(string input)
         {
             var outputTags = new List<string>();
-            for (int i = 0; i < input.Length; i++)
-            {
-                if (input[i] == s_Settings.OpenTag)
-                {
-                    var start = i + 1;
-                    var end = input.IndexOf(s_Settings.CloseTag, i + 1);
-                    var foundTag = input.Substring(start, end - start);
-                    outputTags.Add(foundTag);
-                }
-            }
-
-            return outputTags;
+            // for (int i = 0; i < input.Length; i++)
+            // {
+            //     if (input[i] == s_Settings.OpenTag)
+            //     {
+            //         var start = i + 1;
+            //         var end = input.IndexOf(s_Settings.CloseTag, i + 1);
+            //         var foundTag = input.Substring(start, end - start);
+            //         outputTags.Add(foundTag);
+            //     }
+            // }
+            //
+            //return outputTags;
+            
+            // (?:\[) = Match [ but dont capture it
+            // ([a-z\s]+(?:\/[a-z\s]+)+) = Capture our inside text
+            // [a-z\s]+ = First part of the tag, action map. All text plus whitespace
+            // (?:\/[a-z\s]+)+ = Same again but preceeded by a forward slash. We group this so we can capture multiple
+            //                   eg, if the tag is ActionGroup/Action/SubAction
+            //                   Marked as dont cpature this group as we dont need the subset, just the outer group
+            // (?:\]) = Match closing ] but dont capture it
+            Regex tagsRegex = new Regex(@"(?:\[)([a-z\s]+(?:\/[a-z\s]+)+)(?:\])", RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            MatchCollection matches = tagsRegex.Matches(input);
+            // foreach (Match match in matches)
+            // {
+            //     foreach (Group group in match.Groups)
+            //     {
+            //         if (!group.Value.StartsWith("["))
+            //         {
+            //             outputTags.Add(group.Value);
+            //         }
+            //     }
+            // }
+            return matches.SelectMany(m => m.Groups ).Where(g => !g.Value.StartsWith("[")).Select(g => g.Value).ToList();
         }
 
        
