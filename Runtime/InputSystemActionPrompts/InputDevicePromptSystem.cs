@@ -522,7 +522,7 @@ namespace InputSystemActionPrompts
                         var bindingPath = $"{actionMap.name}/{binding.action}{compositePath}";
                         var bindingPathLower = bindingPath.ToLower();
                         
-                        Debug.Log($"Binding {bindingPathLower} to path {binding.path}, isComposite {binding.isComposite}, isPartOfComposite {binding.isPartOfComposite}, effectivePath: {binding.effectivePath}");
+                        // Debug.Log($"Binding {bindingPathLower} to path {binding.path}, isComposite {binding.isComposite}, isPartOfComposite {binding.isPartOfComposite}, effectivePath: {binding.effectivePath}");
                         var entry = new ActionBindingMapEntry
                         {
                             BindingPath = binding.effectivePath,
