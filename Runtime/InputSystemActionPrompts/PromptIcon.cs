@@ -52,7 +52,7 @@ namespace InputSystemActionPrompts
         /// <summary>
         /// Sets the icon for the current action
         /// </summary>
-        private void RefreshIcon()
+        public void RefreshIcon()
         {
             var sourceSprite=InputDevicePromptSystem.GetActionPathBindingSprite(m_Action);
             if (sourceSprite == null) return;
