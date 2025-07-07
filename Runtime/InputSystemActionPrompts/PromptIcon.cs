@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -19,7 +20,7 @@ namespace InputSystemActionPrompts
 
         [SerializeField] private bool _setNativeSize = true;
         
-        void Start()
+        void Awake()
         {
             m_Image = GetComponent<Image>();
             if (m_Image == null) return;
@@ -27,7 +28,12 @@ namespace InputSystemActionPrompts
             // Listen to device changing
             InputDevicePromptSystem.OnActiveDeviceChanged+= DeviceChanged;
         }
-        
+
+        public void OnEnable()
+        {
+            RefreshIcon();
+        }
+
         private void OnDestroy()
         {
             // Remove listener
