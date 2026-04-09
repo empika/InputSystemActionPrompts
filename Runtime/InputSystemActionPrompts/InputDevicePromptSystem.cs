@@ -502,7 +502,7 @@ namespace InputSystemActionPrompts
         /// <summary>
         /// Builds internal map of all actions (eg "Player/Jump" to available binding paths (eg "Gamepad/ButtonSouth")
         /// </summary>
-        private static void BuildBindingMaps()
+        public static void BuildBindingMaps()
         {
             s_ActionBindingMap = new Dictionary<string, List<ActionBindingMapEntry>>();
             
@@ -519,6 +519,7 @@ namespace InputSystemActionPrompts
                         {
                             compositePath = $"/{binding.name}";
                         }
+                        
                         var bindingPath = $"{actionMap.name}/{binding.action}{compositePath}";
                         var bindingPathLower = bindingPath.ToLower();
                         
