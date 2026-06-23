@@ -19,6 +19,14 @@ namespace InputSystemActionPrompts
         private Image m_Image;
 
         [SerializeField] private bool _setNativeSize = true;
+
+        public void Initialise(string action)
+        {
+            m_Action = action;
+            m_Image = GetComponent<Image>();
+            if (m_Image == null) return;
+            RefreshIcon();
+        }
         
         void Awake()
         {
