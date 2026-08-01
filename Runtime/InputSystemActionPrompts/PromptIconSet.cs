@@ -52,7 +52,11 @@ namespace InputSystemActionPrompts
         private void RefreshIcons()
         {
             var sourceSprites=InputDevicePromptSystem.GetActionPathBindingSprites(m_Action);
-            if (sourceSprites == null) return;
+            if (sourceSprites == null)
+            {
+                Images.ForEach(i => i.gameObject.SetActive(false));
+                return;
+            }
 
             for (int i = 0; i < Images.Count; i++)
             {
