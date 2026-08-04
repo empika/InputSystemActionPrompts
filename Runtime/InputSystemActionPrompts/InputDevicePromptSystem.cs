@@ -249,7 +249,7 @@ namespace InputSystemActionPrompts
             {
                 if (s_ActiveDevice == null) return null;
 
-                var activeDeviceName = s_ActiveDevice.name;
+                var activeDeviceName = s_ActiveDevice.layout;
 
                 if (!s_DeviceDataBindingMap.ContainsKey(activeDeviceName))
                 {
@@ -288,7 +288,7 @@ namespace InputSystemActionPrompts
             if (s_PlatformDeviceOverride == null) // not platform override
             {
                 if (s_ActiveDevice == null) return "NO_ACTIVE_DEVICE";
-                var activeDeviceName = s_ActiveDevice.name;
+                var activeDeviceName = s_ActiveDevice.layout;
 
                 if (!s_DeviceDataBindingMap.ContainsKey(activeDeviceName))
                 {
@@ -347,9 +347,9 @@ namespace InputSystemActionPrompts
             else
             {
                 if (s_ActiveDevice == null) return (null, null);
-                if (!s_DeviceDataBindingMap.ContainsKey(s_ActiveDevice.name)) return (null, null);
+                if (!s_DeviceDataBindingMap.ContainsKey(s_ActiveDevice.layout)) return (null, null);
 
-                validDevice = s_DeviceDataBindingMap[s_ActiveDevice.name];
+                validDevice = s_DeviceDataBindingMap[s_ActiveDevice.layout];
             }
 
             var validEntries = new List<ActionBindingPromptEntry>();
