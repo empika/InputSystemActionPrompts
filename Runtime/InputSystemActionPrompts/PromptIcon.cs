@@ -19,6 +19,7 @@ namespace InputSystemActionPrompts
         private Image m_Image;
 
         [SerializeField] private bool _setNativeSize = true;
+        private bool doRefreshIcon = false;
 
         public void Initialise(string action)
         {
@@ -62,12 +63,39 @@ namespace InputSystemActionPrompts
         /// </summary>
         public void RefreshIcon()
         {
+            doRefreshIcon = true;
+
+            return;
             var sourceSprite=InputDevicePromptSystem.GetActionPathBindingSprite(m_Action);
             if (sourceSprite == null) return;
             m_Image.sprite = sourceSprite;
 
             if (_setNativeSize)
+            {
                 m_Image.SetNativeSize();
+            }
+        }
+
+        public void LateUpdate()
+        {
+            if (doRefreshIcon)
+            {
+                refreshIcon();
+            }
+        }
+
+        private void refreshIcon()
+        {
+            var sourceSprite=InputDevicePromptSystem.GetActionPathBindingSprite(m_Action);
+            if (sourceSprite == null) return;
+            m_Image.sprite = sourceSprite;
+
+            if (_setNativeSize)
+            {
+                m_Image.SetNativeSize();
+            }
+
+            doRefreshIcon = false;
         }
     }
 }
