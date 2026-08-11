@@ -138,7 +138,7 @@ namespace InputSystemActionPrompts
         /// <param name="change"></param>
         private static void OnDeviceChange(InputDevice device, InputDeviceChange change)
         {
-            Debug.Log($"Device changed: {device.name}, {device.layout}");
+            //Debug.Log($"Device changed: {device.name}, {device.layout}");
             // If the active device has been disconnected, revert to default device
             if (device != s_ActiveDevice) return;
             
